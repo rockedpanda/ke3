@@ -3,21 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>灯光练习</title>
+    <title>科目三灯光练习</title>
     <script src="https://cdn.bootcss.com/vue/2.5.10/vue.min.js"></script>
     <style>
-        html,body, #main{
-            width:100%;
-            height:100%;
+        html,
+        body,
+        #main {
+            width: 100%;
+            height: 100%;
             margin: 0;
             padding: 0;
         }
-        #main{
+
+        #main {
             font-size: 16px;
             overflow: hidden;
         }
-        div{
-            box-sizing:border-box;
+
+        div {
+            box-sizing: border-box;
         }
 
         #nav {
@@ -28,15 +32,18 @@
             background-color: #EEEEEE;
             box-shadow: 0 4px 4px #CCC;
         }
+
         .question {
             padding: 0 10px 0 20px;
             line-height: 50px;
-            font-weight:bold;
+            font-weight: bold;
         }
-        .choices{
-            height:calc(100% - 160px);
+
+        .choices {
+            height: calc(100% - 160px);
         }
-        .choice{
+
+        .choice {
             background-color: #4499FF;
             color: #FFFFFF;
             width: calc(100% - 40px);
@@ -46,20 +53,24 @@
             padding: 6px;
             border-radius: 4px;
         }
-        .actions{
+
+        .actions {
             height: 50px;
             display: flex;
-            align-items:center;
+            align-items: center;
             justify-content: center;
         }
-        .actions button{
+
+        .actions button {
             height: 32px;
             width: 100px;
             margin: 10px;
         }
-        .spring{
+
+        .spring {
             flex-grow: 1;
         }
+
         #toast {
             /* display: none; */
             position: fixed;
@@ -70,10 +81,11 @@
             padding: 0 10px;
             width: 100%;
         }
-        #toast span{
+
+        #toast span {
             line-height: 30px;
             border-radius: 6px;
-            background-color: rgba(64,64,64,0.8);
+            background-color: rgba(64, 64, 64, 0.8);
             padding: 5px 10px;
             color: #FFFFFF;
             text-align: center;
@@ -88,7 +100,8 @@
         <div class="choices">
             <div class="choice" v-for="(choice, i) in choices" @click="select(i);">{{choice}}</div>
         </div>
-        <div class="actions"><button @click="pre">上一题</button><span class="spring"></span><button @click="next">下一题</button></div>
+        <div class="actions"><button @click="pre">上一题</button><span class="spring"></span><button
+                @click="next">下一题</button></div>
         <div id="toast" v-show="toastMsg"><span>{{toastMsg}}</span></div>
     </div>
 </body>
@@ -257,9 +270,9 @@
             return {
                 index: 0,
                 allQuestions: allQuestions,
-                question:'',
-                choices:[],
-                toastMsg:''
+                question: '',
+                choices: [],
+                toastMsg: ''
             };
         },
         methods: {
@@ -272,6 +285,7 @@
                 this.index = (this.index + 1) % this.allQuestions.length;
             },
             select: function (i) {
+                clearTimeout(window.selectTimeout);
                 if (this.allQuestions[this.index].ans === i) {
                     this.toast('正确');
                     this.next();
@@ -279,11 +293,12 @@
                     this.toast('错误');
                 }
             },
-            showChoice:function(){
+            showChoice: function () {
                 this.question = this.allQuestions[this.index].title;
                 this.choices = this.allQuestions[this.index].choice;
+                checkTimeout();
             },
-            toast:function(s){
+            toast: function (s) {
                 this.toastMsg = s;
             }
         },
@@ -295,26 +310,30 @@
             //     return this.allQuestions[this.index].choice;
             // }
         },
-        watch:{
-            index:function(val){
+        watch: {
+            index: function (val) {
                 this.question = this.allQuestions[this.index].title;
                 this.choices = [];
-                setTimeout(function(){
+                setTimeout(function () {
                     vm.showChoice();
-                }, 1500);
+                }, 1000);
             },
-            toastMsg:function(val){
+            toastMsg: function (val) {
                 console.log(val);
-                if(!val){
+                if (!val) {
                     return;
                 }
-                setTimeout(function(){vm.toastMsg = '';}, 2000);
+                setTimeout(function () { vm.toastMsg = ''; }, 2000);
             }
         },
-        mounted:function() {
+        mounted: function () {
             this.showChoice();
         },
     });
+    function checkTimeout() {
+        window.selectTimeout = setTimeout(function () {
+            vm.toast('已超过五秒');
+        }, 5000);
+    }
 </script>
-
 </html>
