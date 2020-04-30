@@ -60,6 +60,24 @@
         .spring{
             flex-grow: 1;
         }
+        #toast {
+            /* display: none; */
+            position: fixed;
+            bottom: 80px;
+            height: 30px;
+            text-align: center;
+            z-index: 1;
+            padding: 0 10px;
+            width: 100%;
+        }
+        #toast span{
+            line-height: 30px;
+            border-radius: 6px;
+            background-color: rgba(64,64,64,0.8);
+            padding: 5px 10px;
+            color: #FFFFFF;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -71,6 +89,7 @@
             <div class="choice" v-for="(choice, i) in choices" @click="select(i);">{{choice}}</div>
         </div>
         <div class="actions"><button @click="pre">上一题</button><span class="spring"></span><button @click="next">下一题</button></div>
+        <div id="toast" v-show="toastMsg"><span>{{toastMsg}}</span></div>
     </div>
 </body>
 <script>
@@ -239,7 +258,8 @@
                 index: 0,
                 allQuestions: allQuestions,
                 question:'',
-                choices:[]
+                choices:[],
+                toastMsg:''
             };
         },
         methods: {
@@ -253,15 +273,18 @@
             },
             select: function (i) {
                 if (this.allQuestions[this.index].ans === i) {
-                    alert('正确');
+                    this.toast('正确');
                     this.next();
                 } else {
-                    alert('错误');
+                    this.toast('错误');
                 }
             },
             showChoice:function(){
                 this.question = this.allQuestions[this.index].title;
                 this.choices = this.allQuestions[this.index].choice;
+            },
+            toast:function(s){
+                this.toastMsg = s;
             }
         },
         computed: {
@@ -278,7 +301,14 @@
                 this.choices = [];
                 setTimeout(function(){
                     vm.showChoice();
-                }, 1000);
+                }, 1500);
+            },
+            toastMsg:function(val){
+                console.log(val);
+                if(!val){
+                    return;
+                }
+                setTimeout(function(){vm.toastMsg = '';}, 2000);
             }
         },
         mounted:function() {
