@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灯光练习</title>
+    <script src="https://cdn.bootcss.com/vue/2.5.10/vue.min.js"></script>
+    <style>
+        html,body, #main{
+            width:100%;
+            height:100%;
+            margin: 0;
+            padding: 0;
+        }
+        #main{
+            font-size: 16px;
+            overflow: hidden;
+        }
+        div{
+            box-sizing:border-box;
+        }
+
+        #nav {
+            height: 50px;
+            line-height: 50px;
+            font-size: 18px;
+            text-align: center;
+            background-color: #EEEEEE;
+            box-shadow: 0 4px 4px #CCC;
+        }
+        .question {
+            padding: 0 10px 0 20px;
+            line-height: 50px;
+            font-weight:bold;
+        }
+        .choices{
+            height:calc(100% - 160px);
+        }
+        .choice{
+            background-color: #4499FF;
+            color: #FFFFFF;
+            width: calc(100% - 40px);
+            margin: 10px 20px;
+            line-height: 24px;
+            border: 1px solid #CCC;
+            padding: 6px;
+            border-radius: 4px;
+        }
+        .actions{
+            height: 50px;
+            display: flex;
+            align-items:center;
+            justify-content: center;
+        }
+        .actions button{
+            height: 32px;
+            width: 100px;
+            margin: 10px;
+        }
+        .spring{
+            flex-grow: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <div id="nav">第{{index+1}}题</div>
+        <div class="question">{{question}}</div>
+        <div class="choices">
+            <div class="choice" v-for="(choice, i) in choices" @click="select(i);">{{choice}}</div>
+        </div>
+        <div class="actions"><button @click="pre">上一题</button><span class="spring"></span><button @click="next">下一题</button></div>
+    </div>
+</body>
+<script>
+    var allQuestions = [
+        {
+            title: '起步操作', choice: [
+                '打左转灯',
+                '挂挡',
+                '鸣喇叭',
+                '松手刹',
+                '左右回头看',
+                '全部'
+            ], ans: 5
+        },
+        {
+            title: '夜间通过急弯', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 2
+        },
+        {
+            title: '夜间同方向近距离跟车行驶', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 0
+        },
+        {
+            title: '夜间超越前方车辆', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 2
+        },
+        {
+            title: '夜间与机动车会车', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 0
+        },
+        {
+            title: '路边临时停车', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 2
+        },
+        {
+            title: '夜间通过坡路', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 2
+        },
+        {
+            title: '夜间在没有路灯照明不良条件下行驶', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间通过拱桥', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间通过有交通信号灯控制的路口', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间在照明良好的道路上行驶', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间通过人行横道', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间进入无照明的道路行驶', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间在有灯光照明良好的道路行驶', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间通过没有交通信号灯控制的路口', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间在有路灯、照明良好的道路行驶', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间直行通过路口', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '夜间车辆发生事故难以移动', choice: [
+                '近光灯',
+                '远光灯',
+                '远近灯光交替变换',
+                '示廓灯+危险报警灯'
+            ], ans: 5
+        },
+        {
+            title: '停车操作', choice: [
+                '摘空挡',
+                '拉手刹',
+                '回转向灯',
+                '熄火',
+                '挂一档',
+                '全部'
+            ], ans: 5
+        },
+    ];
+    var vm = new Vue({
+        el: '#main',
+        data: function () {
+            return {
+                index: 0,
+                allQuestions: allQuestions,
+                question:'',
+                choices:[]
+            };
+        },
+        methods: {
+            pre: function () {
+                if (this.index > 0) {
+                    this.index = this.index - 1;
+                }
+            },
+            next: function () {
+                this.index = (this.index + 1) % this.allQuestions.length;
+            },
+            select: function (i) {
+                if (this.allQuestions[this.index].ans === i) {
+                    alert('正确');
+                    this.next();
+                } else {
+                    alert('错误');
+                }
+            },
+            showChoice:function(){
+                this.question = this.allQuestions[this.index].title;
+                this.choices = this.allQuestions[this.index].choice;
+            }
+        },
+        computed: {
+            // question: function () {
+            //     return this.allQuestions[this.index].title;
+            // },
+            // choices: function () {
+            //     return this.allQuestions[this.index].choice;
+            // }
+        },
+        watch:{
+            index:function(val){
+                this.question = this.allQuestions[this.index].title;
+                this.choices = [];
+                setTimeout(function(){
+                    vm.showChoice();
+                }, 1000);
+            }
+        },
+        mounted:function() {
+            this.showChoice();
+        },
+    });
+</script>
+
+</html>
