@@ -298,7 +298,7 @@
                 '打开前照灯'
             ], ans: 0, size:8900}].concat(indexs.map(function(i){
             return allQuestions[i];
-        })).concat([{index:-1,title: '请关闭所有灯光',choice:['关闭所有灯光'], ans:0,size:7800}]);
+        })).concat([{index:-1,title: '请关闭所有灯光',choice:['关闭所有灯光'], ans:0,size:3800}]);
         return ans;
     }
     var vm = new Vue({
@@ -310,7 +310,8 @@
                 question: '',
                 choices: [],
                 toastMsg: '',
-                mode:'text'
+                mode:'text',
+                lastTimeStemp:0
             };
         },
         methods: {
@@ -331,6 +332,7 @@
                 }
             },
             next: function () {
+                this.lastTimeStemp = Date.now();
                 if(this.mode=='text'){
                     this.index = (this.index + 1) % this.allQuestions.length;
                 }else{
@@ -357,7 +359,15 @@
                             this.index = 1;
                         }
                     } 
+                    this.lastTimeStemp = Date.now();
                     return;
+                }
+                if(this.mode=='sound'){
+                    let size = this.allQuestions[this.index].size;
+                    if(Date.now()-this.lastTimeStemp < size){
+                        this.toast('抢答了!');
+                        return;
+                    }
                 }
                 if (this.allQuestions[this.index].ans === i) {
                     this.toast('正确');
