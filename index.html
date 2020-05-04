@@ -90,13 +90,18 @@
             color: #FFFFFF;
             text-align: center;
         }
+        #mp3{
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <div id="main">
-        <div id="nav">第{{index+1}}题</div>
-        <div class="question">{{question}}</div>
+        <div id="nav" v-if="index===0">请选择答题方式</div>
+        <div id="nav" v-if="index!==0">第{{index}}题</div>
+        <div class="question">{{mode=='sound'?'-':question}}</div>
+        <audio :src="mp3Src" v-if="mode=='sound'" id="mp3" ref="mp3"></audio>
         <div class="choices">
             <div class="choice" v-for="(choice, i) in choices" @click="select(i);">{{choice}}</div>
         </div>
@@ -107,7 +112,7 @@
 </body>
 <script>
     var allQuestions = [
-        {
+        /* {
             title: '起步操作', choice: [
                 '打左转灯',
                 '挂挡',
@@ -116,6 +121,12 @@
                 '左右回头看',
                 '全部'
             ], ans: 5
+        }, */
+        {
+            title:'请选择答题方式',choice:[
+                '文字方式(适合背诵)',
+                '语音方式(适合测验)'
+            ], ans: -1
         },
         {
             title: '夜间通过急弯', choice: [
@@ -123,7 +134,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 2
+            ], ans: 2, index:1, size: 2100
         },
         {
             title: '夜间同方向近距离跟车行驶', choice: [
@@ -131,7 +142,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:2, size:3600
         },
         {
             title: '夜间超越前方车辆', choice: [
@@ -139,7 +150,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 2
+            ], ans: 2, index:3, size:2400
         },
         {
             title: '夜间与机动车会车', choice: [
@@ -147,7 +158,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:4,size:2400
         },
         {
             title: '路边临时停车', choice: [
@@ -155,7 +166,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 3
+            ], ans: 3, index:5, size:2200
         },
         {
             title: '夜间通过坡路', choice: [
@@ -163,7 +174,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 2
+            ], ans: 2, index:6, size: 1900
         },
         {
             title: '夜间在没有路灯照明不良条件下行驶', choice: [
@@ -171,7 +182,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 1
+            ], ans: 1, index:7, size:4900
         },
         {
             title: '夜间通过拱桥', choice: [
@@ -179,7 +190,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 2
+            ], ans: 2, index:8, size: 2100
         },
         {
             title: '夜间通过有交通信号灯控制的路口', choice: [
@@ -187,7 +198,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:9, size:3800
         },
         {
             title: '夜间在照明良好的道路上行驶', choice: [
@@ -195,7 +206,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:10, size:3500
         },
         {
             title: '夜间通过人行横道', choice: [
@@ -203,7 +214,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 2
+            ], ans: 2, index:11, size: 2500
         },
         {
             title: '夜间进入无照明的道路行驶', choice: [
@@ -211,7 +222,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 1
+            ], ans: 1, index:12,size:4900
         },
         {
             title: '夜间在有灯光照明良好的道路行驶', choice: [
@@ -219,7 +230,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:13, size:3400
         },
         {
             title: '夜间通过没有交通信号灯控制的路口', choice: [
@@ -227,7 +238,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 2
+            ], ans: 2, index:14
         },
         {
             title: '夜间在有路灯、照明良好的道路行驶', choice: [
@@ -235,7 +246,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:15, size:3400
         },
         {
             title: '夜间直行通过路口', choice: [
@@ -243,7 +254,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 0
+            ], ans: 0, index:16
         },
         {
             title: '夜间车辆发生事故难以移动', choice: [
@@ -251,7 +262,7 @@
                 '远光灯',
                 '远近灯光交替变换',
                 '示廓灯+危险报警灯'
-            ], ans: 3
+            ], ans: 3, index:17
         },
         {
             title: '停车操作', choice: [
@@ -261,9 +272,35 @@
                 '熄火',
                 '挂一档',
                 '全部'
-            ], ans: 5
-        },
+            ], ans: 5, index:18
+        }
     ];
+
+    function getRandom(){
+        // var ans =[{index:0}];
+        var ans =[];
+        var blackList = [16, 18,17,14,];
+        var size = Math.min(5, 17);
+        while(ans.length<5){
+            var index = (Math.random()*17>>0)+1;
+            if(ans.indexOf(index)===-1 && blackList.indexOf(index)===-1){
+                ans.push(index);
+            }
+        }
+        // ans.push({index:-1});
+        return ans;
+    }
+    function createRandomQuestions(){
+        var indexs = getRandom();
+        console.log(indexs);
+        clearTimeout(window.selectTimeout);
+        var ans = [allQuestions[0],{index:-2, title: '请打开前照灯', choice: [
+                '打开前照灯'
+            ], ans: 0, size:8900}].concat(indexs.map(function(i){
+            return allQuestions[i];
+        })).concat([{index:-1,title: '请关闭所有灯光',choice:['关闭所有灯光'], ans:0,size:7800}]);
+        return ans;
+    }
     var vm = new Vue({
         el: '#main',
         data: function () {
@@ -272,20 +309,56 @@
                 allQuestions: allQuestions,
                 question: '',
                 choices: [],
-                toastMsg: ''
+                toastMsg: '',
+                mode:'text'
             };
         },
         methods: {
+            init:function(){
+                this.index= 0;
+                this.allQuestions= allQuestions;
+                this.question=  '';
+                this.choices=  [];
+                this.toastMsg=  '';
+                this.mode= 'text';
+            },
             pre: function () {
                 if (this.index > 0) {
                     this.index = this.index - 1;
                 }
+                if(this.index ===0){
+                    clearTimeout(window.selectTimeout);
+                }
             },
             next: function () {
-                this.index = (this.index + 1) % this.allQuestions.length;
+                if(this.mode=='text'){
+                    this.index = (this.index + 1) % this.allQuestions.length;
+                }else{
+                    this.index = this.index +1;
+                    if(this.index===this.allQuestions.length){
+                        this.init();
+                        this.showChoice();
+                    }
+                }
             },
             select: function (i) {
                 clearTimeout(window.selectTimeout);
+                if(this.allQuestions[this.index].ans === -1){
+                    if(this.index===0){
+                        if(i===0){
+                            //文字模式
+                            this.allQuestions = allQuestions;
+                            this.index = 1;
+                            this.mode = 'text';
+                        }else if(i===1){
+                            //语音模式
+                            this.allQuestions = createRandomQuestions();
+                            this.mode = 'sound';
+                            this.index = 1;
+                        }
+                    } 
+                    return;
+                }
                 if (this.allQuestions[this.index].ans === i) {
                     this.toast('正确');
                     this.next();
@@ -294,12 +367,18 @@
                 }
             },
             showChoice: function () {
+                clearTimeout(window.selectTimeout);
                 this.question = this.allQuestions[this.index].title;
                 this.choices = this.allQuestions[this.index].choice;
-                checkTimeout();
+                if(this.index!==0){
+                    checkTimeout(this.index);
+                }
             },
             toast: function (s) {
                 this.toastMsg = s;
+            },
+            playMP3:function(index){
+                this.$refs.mp3.play();
             }
         },
         computed: {
@@ -312,28 +391,43 @@
         },
         watch: {
             index: function (val) {
-                this.question = this.allQuestions[this.index].title;
+                if(this.mode=='text'){
+                    this.question = this.allQuestions[this.index].title;
+                    setTimeout(function () {
+                        vm.showChoice();
+                    }, 1000);
+                }else{
+                    this.mp3Src = 'mp3/'+this.allQuestions[this.index].index+'.mp3';
+                    setTimeout(function(){
+                        vm.playMP3();
+                        vm.showChoice();
+                    }, 10);
+                }
                 this.choices = [];
-                setTimeout(function () {
-                    vm.showChoice();
-                }, 1000);
+                
             },
             toastMsg: function (val) {
                 console.log(val);
                 if (!val) {
                     return;
                 }
-                setTimeout(function () { vm.toastMsg = ''; }, 2000);
+                setTimeout(function () { vm.toastMsg = ''; }, 3000);
             }
         },
         mounted: function () {
             this.showChoice();
         },
     });
-    function checkTimeout() {
+    function checkTimeout(index) {
+        console.log(index);
+        if(index == 0){
+            return;
+        }
+        var t = (vm.mode=='text')?5000:(5000+vm.allQuestions[vm.index].size);
+        console.log(t);
         window.selectTimeout = setTimeout(function () {
             vm.toast('已超过五秒');
-        }, 5000);
+        }, t);
     }
 </script>
 </html>
