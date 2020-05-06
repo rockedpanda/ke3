@@ -93,11 +93,28 @@
         #mp3{
             display: none;
         }
+        [v-cloak]{
+            display: none;
+        }
+        #result{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            background: #FFFFFF;
+            padding: 40px 10px 0;
+            font-size: 16px;
+        }
+        #result .question{
+            padding-left: 0;
+        }
     </style>
 </head>
 
 <body>
-    <div id="main">
+    <div id="main" v-cloak>
         <div id="nav" v-if="index===0">请选择答题方式</div>
         <div id="nav" v-if="index!==0">第{{index}}题</div>
         <div class="question">{{mode=='sound'?'-':question}}</div>
@@ -107,25 +124,45 @@
         </div>
         <div class="actions"><button @click="pre">上一题</button><span class="spring"></span><button
                 @click="next">下一题</button></div>
+        <div id="result" v-show="isResult" @click="isResult=false;">
+            <div class="question">答题结果:</div>
+            <div v-show="wrongs.length==0">全部正确</div>
+            <div v-show="ahead!=0">注意: 抢答了{{ahead}}次<br/></div>
+            <div v-show="wrongs.length>0">
+                本次错题:
+                <div class="wrong" v-for="(result,i) in wrongs" :key="i">{{getQA(result)}}</div>
+            </div>
+            <hr/>
+                <div class="ad">开心学习,谨慎驾驶</div>
+                <br/>
+                点击任意区域重新开始
+        </div>
         <div id="toast" v-show="toastMsg"><span>{{toastMsg}}</span></div>
+    </div>
+    <div style="display: none;">
+        <audio  src="mp3/-1.mp3" preload="auto"></audio>
+        <audio  src="mp3/-2.mp3" preload="auto"></audio>
+        <audio  src="mp3/1.mp3" preload="auto"></audio>
+        <audio  src="mp3/2.mp3" preload="auto"></audio>
+        <audio  src="mp3/3.mp3" preload="auto"></audio>
+        <audio  src="mp3/4.mp3" preload="auto"></audio>
+        <audio  src="mp3/5.mp3" preload="auto"></audio>
+        <audio  src="mp3/6.mp3" preload="auto"></audio>
+        <audio  src="mp3/7.mp3" preload="auto"></audio>
+        <audio  src="mp3/8.mp3" preload="auto"></audio>
+        <audio  src="mp3/9.mp3" preload="auto"></audio>
+        <audio  src="mp3/10.mp3" preload="auto"></audio>
+        <audio  src="mp3/11.mp3" preload="auto"></audio>
+        <audio  src="mp3/12.mp3" preload="auto"></audio>
+        <audio  src="mp3/13.mp3" preload="auto"></audio>
     </div>
 </body>
 <script>
     var allQuestions = [
-        /* {
-            title: '起步操作', choice: [
-                '打左转灯',
-                '挂挡',
-                '鸣喇叭',
-                '松手刹',
-                '左右回头看',
-                '全部'
-            ], ans: 5
-        }, */
         {
             title:'请选择答题方式',choice:[
-                '文字方式(适合背诵)',
-                '语音方式(适合测验)'
+                '文字方式(适合背题)',
+                '语音方式(不要抢答,随机出题)'
             ], ans: -1
         },
         {
@@ -265,21 +302,33 @@
             ], ans: 3, index:17
         },
         {
-            title: '停车操作', choice: [
-                '摘空挡',
-                '拉手刹',
-                '回转向灯',
-                '熄火',
-                '挂一档',
+            title: '起步操作', choice: [
+                '1左转向灯',
+                '2按喇叭',
+                '3挂一档',
+                '4松手刹',
+                '5观察左后视镜',
+                '6观察并手摸中央后视镜',
+                '7观察右后视镜',
+                '8观察左后视镜',
                 '全部'
-            ], ans: 5, index:18
+            ], ans: 8, index:18
+        },{
+            title: '停车操作', choice: [
+                '1摘空挡',
+                '2拉手刹',
+                '3回转向灯',
+                '4熄火',
+                '5挂一档',
+                '全部'
+            ], ans: 5, index:19
         }
     ];
 
     function getRandom(){
         // var ans =[{index:0}];
         var ans =[];
-        var blackList = [16, 18,17,14,];
+        var blackList = [16, 18,19,17,14,15];
         var size = Math.min(5, 17);
         while(ans.length<5){
             var index = (Math.random()*17>>0)+1;
@@ -311,10 +360,16 @@
                 choices: [],
                 toastMsg: '',
                 mode:'text',
-                lastTimeStemp:0
+                lastTimeStemp:0,
+                wrongs:[],
+                isResult:false,
+                ahead:0
             };
         },
         methods: {
+            showResult:function(){
+                this.isResult = true;
+            },
             init:function(){
                 this.index= 0;
                 this.allQuestions= allQuestions;
@@ -334,13 +389,14 @@
             next: function () {
                 this.lastTimeStemp = Date.now();
                 if(this.mode=='text'){
-                    this.index = (this.index + 1) % this.allQuestions.length;
+                    this.index = (this.index + 1);
                 }else{
                     this.index = this.index +1;
-                    if(this.index===this.allQuestions.length){
-                        this.init();
-                        this.showChoice();
-                    }
+                }
+                if(this.index===this.allQuestions.length){
+                    this.showResult();
+                    this.init();
+                    this.showChoice();
                 }
             },
             select: function (i) {
@@ -366,6 +422,7 @@
                     let size = this.allQuestions[this.index].size;
                     if(Date.now()-this.lastTimeStemp < size){
                         this.toast('抢答了!');
+                        this.ahead = this.ahead+1;
                         return;
                     }
                 }
@@ -373,7 +430,13 @@
                     this.toast('正确');
                     this.next();
                 } else {
+                    if(this.wrongs.indexOf(this.allQuestions[this.index].index)==-1){
+                        this.wrongs.push(this.allQuestions[this.index].index);
+                    }
                     this.toast('错误');
+                    if(this.mode=='sound'){
+                        this.next();
+                    }
                 }
             },
             showChoice: function () {
@@ -389,6 +452,9 @@
             },
             playMP3:function(index){
                 this.$refs.mp3.play();
+            },
+            getQA :function(index){
+                return allQuestions[index].title +": "+allQuestions[index].choice[allQuestions[index].ans];
             }
         },
         computed: {
@@ -422,6 +488,12 @@
                     return;
                 }
                 setTimeout(function () { vm.toastMsg = ''; }, 3000);
+            },
+            isResult:function(val){
+                if(!val){
+                    this.wrongs = [];
+                    this.ahead = 0;
+                }
             }
         },
         mounted: function () {
@@ -429,7 +501,7 @@
         },
     });
     function checkTimeout(index) {
-        console.log(index);
+        // console.log(index);
         if(index == 0){
             return;
         }
